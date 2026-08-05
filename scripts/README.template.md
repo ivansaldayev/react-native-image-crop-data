@@ -228,13 +228,15 @@ to `ImageWithCrop` that was used to produce the `CropData` you're replaying.
 
 **Verified on a device:**
 
-- The example app has been run on a physical Android device (New Architecture, Reanimated
-  4.1.1): pinch/pan gesture feel and panning bounds at the edges of the crop window, re-editing
-  a saved crop, replay across preview sizes and aspect ratios, physical export via
+- The example app has been run on physical Android and iOS devices (New Architecture,
+  Reanimated 4.1.1): pinch/pan gesture feel and panning bounds at the edges of the crop window,
+  re-editing a saved crop, replay across preview sizes and aspect ratios, physical export via
   `expo-image-manipulator` visually matching its `ImageWithCrop` preview, and overlay seam
-  rendering.
-- What that run does **not** cover — iOS and EXIF-rotated camera photos — is listed under
-  "Known gaps" below.
+  rendering — the full example flow, on both platforms.
+- EXIF orientation, for a remote image: a remote image carrying a real EXIF rotation flag
+  (orientation ≠ 1) has been cropped, replayed and exported correctly on both devices. What
+  that does **not** cover — EXIF-rotated captures taken by the device camera itself — is
+  listed under "Known gaps" below.
 
 **Verified by automated checks:**
 
@@ -258,28 +260,28 @@ to `ImageWithCrop` that was used to produce the `CropData` you're replaying.
 
 **Known gaps:**
 
-1. **EXIF orientation is not specifically verified.** Camera photos routinely carry an EXIF
-   rotation flag. `Image.getSize` reports the image's dimensions *without* applying that
-   rotation, while the renderer that actually draws the image *does* apply it — so the two can
-   disagree, and the crop is then computed against the wrong geometry. The device run above did
-   not specifically exercise EXIF-rotated camera captures. If you crop photos straight from a
-   camera, verify this on your target devices before relying on it; passing a known-correct
-   `imageSize` prop bypasses the `Image.getSize` measurement path entirely and sidesteps the
-   discrepancy.
-2. **No iOS run.** The device run above was Android-only; nothing in this repository has been
-   executed on an iOS device or simulator.
+1. **EXIF orientation is verified for a remote image, not for camera captures.** Camera photos
+   routinely carry an EXIF rotation flag. `Image.getSize` reports the image's dimensions
+   *without* applying that rotation, while the renderer that actually draws the image *does*
+   apply it — so the two can disagree, and the crop is then computed against the wrong
+   geometry. The device runs above exercised this mechanism with a *remote* EXIF-rotated image
+   (see "Status"), but not with a capture taken by the device camera itself — a local
+   `file://` URI from an image picker, which reaches the measurement through a different path
+   than a network URL. If you crop photos straight from a camera, verify this on your target
+   devices before relying on it; passing a known-correct `imageSize` prop bypasses the
+   `Image.getSize` measurement path entirely and sidesteps the discrepancy.
 
 ## Recipes
 
 Recipes marked **Verified** are lifted mechanically into this README, by the same script that
 generated it, from the example app's real source — not retyped: type-checked, bundled, and
-executed as part of the example app's run on a real Android device (see "Status" above).
+executed as part of the example app's runs on real Android and iOS devices (see "Status" above).
 Recipes marked **Unverified** are a reasonable starting point, but nothing in this repository has
 ever executed them.
 
 ### Export via `expo-image-manipulator`
 
-**Verified — lifted from the example app's real source and executed on a real Android device (the example's Export screen runs exactly this function).**
+**Verified — lifted from the example app's real source and executed on real Android and iOS devices (the example's Export screen runs exactly this function).**
 
 <!-- include-snippet file="example/src/snippets/exportCrop.ts" name="export-manipulator" lang="ts" -->
 
@@ -312,7 +314,7 @@ export async function exportWithImageEditor(
 
 ### Render via `expo-image`
 
-**Verified — lifted from the example app's real source and executed on a real Android device (the example's Preview screen renders exactly this component).**
+**Verified — lifted from the example app's real source and executed on real Android and iOS devices (the example's Preview screen renders exactly this component).**
 
 <!-- include-snippet file="example/src/snippets/ExpoImageRendererExample.tsx" name="expo-image-renderer" lang="tsx" -->
 
