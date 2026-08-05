@@ -30,11 +30,19 @@ config.watchFolders = [...(config.watchFolders ?? []), libraryRoot];
 config.resolver.nodeModulesPaths = [exampleNodeModules, ...(config.resolver.nodeModulesPaths ?? [])];
 
 // Any resolution reaching into the library's own nested copy of a peer dependency is
-// refused outright...
+// refused outright. The prefix regex is assembled segment-by-segment with a [\\/] class
+// between segments rather than taken literally from path.join's output: on Windows
+// path.join yields backslashes while Metro matches forward-slash paths, so a literal
+// prefix silently never engages there and both copies bundle again -- the exact failure
+// this block exists to prevent. No regex flags: Metro requires every blockList pattern to
+// carry identical flags and Expo's own defaults carry none.
 config.resolver.blockList = [
   ...[config.resolver.blockList].flat().filter(Boolean),
   ...peerDependencyNames.map(
-    (name) => new RegExp(`^${escapeRegExp(path.join(libraryRoot, "node_modules", name))}[\\/].*$`),
+    (name) =>
+      new RegExp(
+        `^${[...libraryRoot.split(path.sep), "node_modules", name].map(escapeRegExp).join("[\\\\/]")}[\\\\/].*$`,
+      ),
   ),
 ];
 
