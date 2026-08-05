@@ -51,12 +51,19 @@ function ok(message) {
   console.log(`OK: ${message}`);
 }
 
+// On Windows every spawned tool (npm, publint, attw) resolves to a .cmd shim, and Node refuses
+// to spawn those without a shell since the CVE-2024-27980 fix - spawnSync returns EINVAL with
+// the tool never having run. A shell joins args with spaces unquoted, which is fine here: every
+// path involved (ROOT, os.tmpdir()) is spawned as produced, and the gates run from a fixed repo
+// layout, not arbitrary user input.
+const IS_WINDOWS = process.platform === "win32";
+
 function run(cmd, args, opts = {}) {
-  return spawnSync(cmd, args, { cwd: ROOT, encoding: "utf8", ...opts });
+  return spawnSync(cmd, args, { cwd: ROOT, encoding: "utf8", shell: IS_WINDOWS, ...opts });
 }
 
 function bin(name) {
-  return path.join(ROOT, "node_modules", ".bin", name);
+  return path.join(ROOT, "node_modules", ".bin", IS_WINDOWS ? `${name}.cmd` : name);
 }
 
 function walk(dir) {
