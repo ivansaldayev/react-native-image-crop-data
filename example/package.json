@@ -1,0 +1,40 @@
+{
+  "name": "react-native-image-crop-data-example",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --host lan",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit",
+    "export": "expo export",
+    "prebuild": "expo prebuild --platform android --no-install",
+    "pb": "npm run prebuild && npm run copy:android",
+    "copy:android": "WIN=${WIN_DIR:-/mnt/c/lib} && rm -rf $WIN/android/app/build/generated && rsync -a --delete --exclude='app/build' --exclude='app/.cxx' --exclude='.gradle' --exclude='.idea' --exclude='local.properties' ./android/ $WIN/android/ && cp package.json package-lock.json $WIN/ && touch $WIN/index.ts && sed -i 's|// debuggableVariants = .*|debuggableVariants = [\"debug\", \"release\"]|' $WIN/android/app/build.gradle",
+    "install:win": "cmd.exe /c \"cd /d $(wslpath -w ${WIN_DIR:-/mnt/c/lib}) && npm ci\"",
+    "bundle": "WIN=${WIN_DIR:-/mnt/c/lib} && mkdir -p $WIN/android/app/src/main/assets && NODE_ENV=production npx expo export:embed --platform android --dev false --reset-cache --entry-file index.ts --bundle-output $WIN/android/app/src/main/assets/index.android.bundle --assets-dest $WIN/android/app/src/main/res && node_modules/react-native/sdks/hermesc/linux64-bin/hermesc -O -emit-binary -output-source-map -out $WIN/android/app/src/main/assets/index.android.bundle $WIN/android/app/src/main/assets/index.android.bundle",
+    "bundle:clear": "rm -f ${WIN_DIR:-/mnt/c/lib}/android/app/src/main/assets/index.android.bundle",
+    "clear:android": "rm -rf ./android/app/build/generated/assets/createBundleReleaseJsAndAssets/index.android.bundle"
+  },
+  "dependencies": {
+    "expo": "^54.0.12",
+    "expo-image": "~3.0.9",
+    "expo-image-manipulator": "~14.0.7",
+    "expo-image-picker": "~17.0.8",
+    "expo-status-bar": "~3.0.8",
+    "react": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-image-crop-data": "file:..",
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-worklets": "0.5.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@types/react": "~19.1.10",
+    "babel-preset-expo": "~54.0.12",
+    "typescript": "^6.0.3"
+  }
+}

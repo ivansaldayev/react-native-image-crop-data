@@ -1,0 +1,11 @@
+node_modules/
+
+lib/
+coverage/
+
+*.log
+.DS_Store
+
+example/node_modules/
+example/.expo/
+example/dist/

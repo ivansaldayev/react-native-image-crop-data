@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "react-native-image-crop-data example",
+    "slug": "react-native-image-crop-data-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.reactnativeimagecropdata"
+    },
+    "android": {
+      "package": "com.example.reactnativeimagecropdata"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": ["expo-image-picker"]
+  }
+}

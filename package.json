@@ -1,0 +1,111 @@
+{
+  "name": "react-native-image-crop-data",
+  "version": "0.1.0",
+  "description": "Non-destructive image cropping for React Native: store crop transforms as data, replay them on any renderer, and rasterize the source image only on explicit export.",
+  "license": "MIT",
+  "author": "Ivan Saldayev <ivansaldayev@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivansaldayev/react-native-image-crop-data.git"
+  },
+  "homepage": "https://github.com/ivansaldayev/react-native-image-crop-data#readme",
+  "bugs": {
+    "url": "https://github.com/ivansaldayev/react-native-image-crop-data/issues"
+  },
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "react-native",
+    "image",
+    "crop",
+    "cropper",
+    "non-destructive",
+    "gesture-handler",
+    "reanimated"
+  ],
+  "main": "./lib/commonjs/index.js",
+  "module": "./lib/module/index.js",
+  "types": "./lib/typescript/commonjs/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/typescript/module/src/index.d.ts",
+        "default": "./lib/module/index.js"
+      },
+      "require": {
+        "types": "./lib/typescript/commonjs/src/index.d.ts",
+        "default": "./lib/commonjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "!src/**/__tests__/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "build": "npm run clean && bob build",
+    "clean": "rm -rf lib",
+    "validate": "publint && attw --pack .",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
+    "typecheck:contract": "tsc --noEmit --project tsconfig.contract.json",
+    "verify": "node scripts/verify-artifact.mjs",
+    "docs:build": "node scripts/build-readme.mjs",
+    "docs:check": "node scripts/build-readme.mjs --check",
+    "sync:name": "node scripts/sync-name.mjs"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-native": "*",
+    "react-native-gesture-handler": ">=2.0.0",
+    "react-native-reanimated": ">=3.0.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.1.10",
+    "expo-image": "~3.0.9",
+    "jest": "^30.0.0",
+    "publint": "^0.3.22",
+    "react": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-builder-bob": "^0.43.0",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-reanimated": "~4.1.1",
+    "ts-jest": "^29.4.12",
+    "typescript": "^6.0.3"
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "commonjs",
+        {
+          "esm": true
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  }
+}
