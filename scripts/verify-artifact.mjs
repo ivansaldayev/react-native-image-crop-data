@@ -469,8 +469,41 @@ section("Gate 8/9 - package-name single source");
   // context DOCS's `sync-name.mjs --check` and the pre-publication sweep are built for -
   // duplicating a partial version of that here produced exactly the false positives it was
   // meant to avoid.
+  // The GitHub linkage fields (repository.url, homepage, bugs.url) necessarily embed the name -
+  // the repo is named after the package, and npm needs these fields to rewrite the README's
+  // relative links/images on the package page. They are not a second *authored* source: each one
+  // is validated below as exactly the URL derived from the name (one owner, taken from
+  // repository.url; repo segment strictly equal to NAME) and only then excluded from the
+  // occurrence count. A hand-edited or drifted URL still fails the gate.
   const pkgJsonText = fs.readFileSync(path.join(ROOT, "package.json"), "utf8");
-  const occurrencesInPkgJson = pkgJsonText.split(NAME).length - 1;
+  let countedText = pkgJsonText;
+  const linkageFields = [
+    ["repository.url", pkg.repository?.url, (owner) => `git+https://github.com/${owner}/${NAME}.git`],
+    ["homepage", pkg.homepage, (owner) => `https://github.com/${owner}/${NAME}#readme`],
+    ["bugs.url", pkg.bugs?.url, (owner) => `https://github.com/${owner}/${NAME}/issues`],
+  ].filter(([, value]) => value !== undefined);
+  if (linkageFields.length > 0) {
+    const ownerMatch = /^git\+https:\/\/github\.com\/([^/]+)\/(.+)\.git$/.exec(pkg.repository?.url ?? "");
+    if (!ownerMatch || ownerMatch[2] !== NAME) {
+      fail(
+        "package-name",
+        `repository.url is "${pkg.repository?.url}"; the GitHub linkage fields require it to be ` +
+          `"git+https://github.com/<owner>/${NAME}.git" so the owner for the other URLs has one source`,
+      );
+    } else {
+      const owner = ownerMatch[1];
+      for (const [label, value, derive] of linkageFields) {
+        const expected = derive(owner);
+        if (value === expected) {
+          ok(`${label} is exactly the URL derived from the package name`);
+          countedText = countedText.split(value).join("");
+        } else {
+          fail("package-name", `${label} is "${value}", expected "${expected}" (derived from the name)`);
+        }
+      }
+    }
+  }
+  const occurrencesInPkgJson = countedText.split(NAME).length - 1;
   if (occurrencesInPkgJson !== 1) {
     fail(
       "package-name",
