@@ -318,8 +318,14 @@ export const ImageCrop = <P extends CropImageBaseProps = ImageProps>({
   const lastScale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-  const lastTranslateX = useSharedValue(0);
-  const lastTranslateY = useSharedValue(0);
+  // Finger translation already folded into `translateX`/`translateY` during the current pan
+  // gesture, in screen pixels. Pan updates must be incremental — each event's delta converted
+  // at the scale current at that moment. Re-converting the gesture's whole accumulated
+  // translation at the current scale (the previous approach) leaves that translation constant
+  // in screen pixels while a simultaneous pinch rescales everything else, which drags the
+  // pinch anchor away from the crop-window centre by exactly the panned distance.
+  const prevPanTranslationX = useSharedValue(0);
+  const prevPanTranslationY = useSharedValue(0);
 
   // Seeds from an incoming `cropData`, and re-seeds whenever it (or the geometry it depends
   // on) changes, so a later `cropData` update or a container/image resize both reapply the
@@ -334,10 +340,8 @@ export const ImageCrop = <P extends CropImageBaseProps = ImageProps>({
     scale.value = absoluteScale;
     lastScale.value = absoluteScale;
     translateX.value = nextTranslateX;
-    lastTranslateX.value = nextTranslateX;
     translateY.value = nextTranslateY;
-    lastTranslateY.value = nextTranslateY;
-  }, [geometry, cropData, scale, lastScale, translateX, translateY, lastTranslateX, lastTranslateY]);
+  }, [geometry, cropData, scale, lastScale, translateX, translateY]);
 
   // Without a `cropData` seed, the identity crop is applied exactly once per `uri` — not again
   // on a later container resize (e.g. an orientation change), which would otherwise discard an
@@ -357,11 +361,9 @@ export const ImageCrop = <P extends CropImageBaseProps = ImageProps>({
     scale.value = absoluteScale;
     lastScale.value = absoluteScale;
     translateX.value = nextTranslateX;
-    lastTranslateX.value = nextTranslateX;
     translateY.value = nextTranslateY;
-    lastTranslateY.value = nextTranslateY;
     hasSeededIdentityRef.current = true;
-  }, [geometry, cropData, scale, lastScale, translateX, translateY, lastTranslateX, lastTranslateY]);
+  }, [geometry, cropData, scale, lastScale, translateX, translateY]);
 
   const getCropData = useCallback((): CropData | null => {
     if (!geometry) return null;
@@ -383,12 +385,10 @@ export const ImageCrop = <P extends CropImageBaseProps = ImageProps>({
         scale.value = geometry.initialScale;
         lastScale.value = geometry.initialScale;
         translateX.value = 0;
-        lastTranslateX.value = 0;
         translateY.value = 0;
-        lastTranslateY.value = 0;
       },
     }),
-    [getCropData, geometry, scale, lastScale, translateX, translateY, lastTranslateX, lastTranslateY],
+    [getCropData, geometry, scale, lastScale, translateX, translateY],
   );
 
   const pinchGesture = Gesture.Pinch()
@@ -415,8 +415,8 @@ export const ImageCrop = <P extends CropImageBaseProps = ImageProps>({
   const panGesture = Gesture.Pan()
     .averageTouches(true)
     .onBegin(() => {
-      lastTranslateX.value = translateX.value;
-      lastTranslateY.value = translateY.value;
+      prevPanTranslationX.value = 0;
+      prevPanTranslationY.value = 0;
     })
     .onUpdate((e) => {
       if (!geometry) return;
@@ -428,8 +428,10 @@ export const ImageCrop = <P extends CropImageBaseProps = ImageProps>({
       const maxActualX = Math.max(0, (scaledImageWidth - geometry.cropWindowSize.width) / 2);
       const maxActualY = Math.max(0, (scaledImageHeight - geometry.cropWindowSize.height) / 2);
 
-      const nextTranslateX = lastTranslateX.value + e.translationX / safeScale;
-      const nextTranslateY = lastTranslateY.value + e.translationY / safeScale;
+      const nextTranslateX = translateX.value + (e.translationX - prevPanTranslationX.value) / safeScale;
+      const nextTranslateY = translateY.value + (e.translationY - prevPanTranslationY.value) / safeScale;
+      prevPanTranslationX.value = e.translationX;
+      prevPanTranslationY.value = e.translationY;
 
       const maxNormalizedX = maxActualX / safeScale;
       const maxNormalizedY = maxActualY / safeScale;
@@ -438,8 +440,6 @@ export const ImageCrop = <P extends CropImageBaseProps = ImageProps>({
       translateY.value = clamp(nextTranslateY, -maxNormalizedY, maxNormalizedY);
     })
     .onEnd(() => {
-      lastTranslateX.value = translateX.value;
-      lastTranslateY.value = translateY.value;
       if (!geometry || !onCropChange) return;
 
       const rawScale = scale.value;

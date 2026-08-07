@@ -1,6 +1,6 @@
 {
   "name": "react-native-image-crop-data",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Non-destructive image cropping for React Native: store crop transforms as data, replay them on any renderer, and rasterize the source image only on explicit export.",
   "license": "MIT",
   "author": "Ivan Saldayev <ivansaldayev@gmail.com>",
