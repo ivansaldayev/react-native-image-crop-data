@@ -251,7 +251,10 @@ to `ImageWithCrop` that was used to produce the `CropData` you're replaying.
   Reanimated 4.1.1): pinch/pan gesture feel and panning bounds at the edges of the crop window,
   re-editing a saved crop, replay across preview sizes and aspect ratios, physical export via
   `expo-image-manipulator` visually matching its `ImageWithCrop` preview, and overlay seam
-  rendering — the full example flow, on both platforms.
+  rendering — the full example flow, on both platforms. The 0.1.1 gesture fix — the pinch
+  anchor staying at the crop-window centre even when the pinch follows a two-finger pan — has
+  been re-verified on both devices, along with gestures and export across both remote and
+  gallery images.
 - EXIF orientation: a remote image carrying a real EXIF rotation flag (orientation ≠ 1) and
   EXIF-rotated captures taken by the device camera itself (local `file://` URIs from the image
   picker — a different measurement path than a network URL) have been cropped, replayed and
