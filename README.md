@@ -252,10 +252,13 @@ to `ImageWithCrop` that was used to produce the `CropData` you're replaying.
   re-editing a saved crop, replay across preview sizes and aspect ratios, physical export via
   `expo-image-manipulator` visually matching its `ImageWithCrop` preview, and overlay seam
   rendering — the full example flow, on both platforms.
-- EXIF orientation, for a remote image: a remote image carrying a real EXIF rotation flag
-  (orientation ≠ 1) has been cropped, replayed and exported correctly on both devices. What
-  that does **not** cover — EXIF-rotated captures taken by the device camera itself — is
-  listed under "Known gaps" below.
+- EXIF orientation: a remote image carrying a real EXIF rotation flag (orientation ≠ 1) and
+  EXIF-rotated captures taken by the device camera itself (local `file://` URIs from the image
+  picker — a different measurement path than a network URL) have been cropped, replayed and
+  exported correctly on both devices. This matters because `Image.getSize` reports dimensions
+  *without* applying the rotation flag while the renderer that draws the image *does* apply
+  it — the exact discrepancy these runs exercised. Passing a known-correct `imageSize` prop
+  bypasses the measurement path entirely if you ever need to sidestep it.
 
 **Verified by automated checks:**
 
@@ -276,19 +279,6 @@ to `ImageWithCrop` that was used to produce the `CropData` you're replaying.
   repository. The peer range is declared as `>=3.0.0` because the APIs this library uses
   (`useSharedValue`, `useAnimatedStyle`, `Animated.View`, worklets) are identical across 3.x and
   4.x, but the 3.x branch of that range has not itself been run.
-
-**Known gaps:**
-
-1. **EXIF orientation is verified for a remote image, not for camera captures.** Camera photos
-   routinely carry an EXIF rotation flag. `Image.getSize` reports the image's dimensions
-   *without* applying that rotation, while the renderer that actually draws the image *does*
-   apply it — so the two can disagree, and the crop is then computed against the wrong
-   geometry. The device runs above exercised this mechanism with a *remote* EXIF-rotated image
-   (see "Status"), but not with a capture taken by the device camera itself — a local
-   `file://` URI from an image picker, which reaches the measurement through a different path
-   than a network URL. If you crop photos straight from a camera, verify this on your target
-   devices before relying on it; passing a known-correct `imageSize` prop bypasses the
-   `Image.getSize` measurement path entirely and sidesteps the discrepancy.
 
 ## Recipes
 
