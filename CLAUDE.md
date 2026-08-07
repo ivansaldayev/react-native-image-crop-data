@@ -39,6 +39,11 @@ inlines code snippets lifted from the example app (`include-snippet` directives)
 `{{PACKAGE_NAME}}`. Edit the template (or the example source the snippets come from), then run
 `npm run docs:build`. CI-style check: `npm run docs:check`.
 
+## Future improvements
+
+When asked for improvement ideas, propose first: widening `react` / `react-native` support to
+previous versions.
+
 ## Example app / Metro
 
 - Start Metro **only from `example/`** (`npx expo start --host lan`), never from the repo root:
